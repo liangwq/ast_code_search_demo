@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>代码解析器</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- 在 head 部分添加 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.3.1/styles/github.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+</head>
+<body>
+  <div class="container-fluid">
+    <header class="py-3 mb-3 border-bottom">
+      <h1 class="h3">代码解析器</h1>
+    </header>
+
+    <div class="row">
+      <!-- 左侧边栏 -->
+      <div class="col-md-3">
+        <div class="card mb-3">
+          <div class="card-header">文件上传与解析</div>
+          <div class="card-body">
+            <input type="file" id="files" class="form-control mb-2" multiple>
+            <div class="mb-2">
+              <label for="granularity" class="form-label">解析粒度：</label>
+              <select id="granularity" class="form-select">
+                <option value="fine">细粒度</option>
+                <option value="medium" selected>中等粒度</option>
+                <option value="coarse">粗粒度</option>
+              </select>
+            </div>
+            <button id="parse-btn" class="btn btn-primary w-100">解析</button>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">项目导入</div>
+          <div class="card-body">
+            <input type="text" id="project-path" class="form-control mb-2" placeholder="请输入项目路径">
+            <button id="import-btn" class="btn btn-success w-100">导入项目</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主内容区 -->
+      <div class="col-md-9">
+        <ul class="nav nav-tabs" id="main-tabs">
+          <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#tree-view">AST树视图</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#snippets-view">代码片段</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#search-view">检索</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#graph-view">关系图</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#export-view">导出</a>
+          </li>
+        </ul>
+
+        <div class="tab-content p-3 border border-top-0 rounded-bottom">
+          <!-- AST树视图 -->
+          <div class="tab-pane fade show active" id="tree-view">
+            <div id="ast-tree"></div>
+          </div>
+
+          <!-- 代码片段视图 -->
+          <div class="tab-pane fade" id="snippets-view">
+            <div id="saved-snippets"></div>
+          </div>
+
+          <!-- 检索视图 -->
+          <div class="tab-pane fade" id="search-view">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <input type="text" id="search-input" class="form-control" placeholder="输入关键字搜索代码片段...">
+              </div>
+              <div class="col-md-3">
+                <select id="search-type" class="form-select">
+                  <option value="name">按名称</option>
+                  <option value="type">按类型</option>
+                  <option value="content">按内容</option>
+                  <option value="fileName">按文件名</option>
+                  <option value="filePath">按文件路径</option>
+                  <option value="projectName">按项目名称</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <button id="search-btn" class="btn btn-primary w-100">搜索</button>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <select id="project-filter" class="form-select">
+                  <option value="">所有项目</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select id="file-type-filter" class="form-select">
+                  <option value="">所有文件类型</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <input type="text" id="path-filter" class="form-control" placeholder="按路径过滤">
+              </div>
+            </div>
+
+            <div id="search-results" class="mt-3"></div>
+          </div>
+
+          <!-- 关系图视图 -->
+          <div class="tab-pane fade" id="graph-view">
+            <div class="mb-3">
+              <select id="graph-type" class="form-select w-auto d-inline-block">
+                <option value="all">所有关系</option>
+                <option value="inheritance">继承关系</option>
+                <option value="dependency">依赖关系</option>
+                <option value="call">调用关系</option>
+                <option value="style">样式关系</option>
+              </select>
+              <button id="refresh-graph-btn" class="btn btn-primary ms-2">刷新图表</button>
+            </div>
+            <div id="graph-container" style="height: 600px; border: 1px solid #ddd;"></div>
+          </div>
+
+          <!-- 导出视图 -->
+          <div class="tab-pane fade" id="export-view">
+            <div class="mb-3">
+              <select id="export-format" class="form-select w-auto d-inline-block">
+                <option value="markdown">Markdown</option>
+                <option value="json">JSON</option>
+                <option value="html">HTML</option>
+              </select>
+              <button id="export-btn" class="btn btn-primary ms-2">导出</button>
+            </div>
+            <div id="export-preview" class="border p-3 bg-light"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入脚本文件 -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/graph.js"></script>
+  <script src="js/export.js"></script>
+
+  <!-- 在 body 结束前添加 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.3.1/lib/highlight.min.js"></script>
+<!-- Add these lines in the <head> section of your HTML file -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<!-- Optional: Add language-specific bundles if needed -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/html.min.js"></script>
+
+<!-- Then, add this script at the end of your <body> tag -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize highlight.js
+    hljs.highlightAll();
+    
+    // Function to apply highlighting to dynamically added code
+    window.highlightCode = function() {
+      document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+    };
+  });
+</script>
+</body>
+</html>
+
+

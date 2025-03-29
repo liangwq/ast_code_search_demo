@@ -1,0 +1,46 @@
+.code-snippet {
+  margin: 10px 0;
+  padding: 10px;
+  background: #f8f8f8;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+.snippet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.snippet-meta {
+  font-size: 13px;
+  color: #666;
+}
+.meta-row {
+  margin: 4px 0;
+}
+.meta-label {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #333;
+}
+.meta-value {
+  word-break: break-all;
+}
+.type-badge {
+  background: #0366d6;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+.tree-view {
+  margin-left: 20px;
+}
+.node-item {
+  cursor: pointer;
+  padding: 4px 0;
+}
+.node-item:hover {
+  background: #f0f0f0;
+}

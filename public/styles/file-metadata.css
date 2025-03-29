@@ -1,0 +1,28 @@
+.file-metadata {
+  margin: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.file-metadata table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.file-metadata th,
+.file-metadata td {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.file-metadata th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.file-metadata tr:hover {
+  background-color: #f9f9f9;
+}
